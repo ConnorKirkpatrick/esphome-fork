@@ -60,9 +60,15 @@ uint32_t Aggregator::aggregate() {
 }
 
 void ADCSensor::update() {
+#ifdef USE_POWER_SUPPLY
+  this->power_.request();
+#endif
   float value_v = this->sample();
   ESP_LOGV(TAG, "'%s': Got voltage=%.4fV", this->get_name().c_str(), value_v);
   this->publish_state(value_v);
+#ifdef USE_POWER_SUPPLY
+  this->power_.unrequest();
+#endif
 }
 
 void ADCSensor::set_sample_count(uint8_t sample_count) {

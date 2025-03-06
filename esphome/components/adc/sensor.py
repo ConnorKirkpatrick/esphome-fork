@@ -1,7 +1,7 @@
 import logging
 
 import esphome.codegen as cg
-from esphome.components import sensor, voltage_sampler
+from esphome.components import power_supply, sensor, voltage_sampler
 from esphome.components.esp32 import get_esp32_variant
 import esphome.config_validation as cv
 from esphome.const import (
@@ -9,6 +9,7 @@ from esphome.const import (
     CONF_ID,
     CONF_NUMBER,
     CONF_PIN,
+    CONF_POWER_SUPPLY,
     CONF_RAW,
     CONF_WIFI,
     DEVICE_CLASS_VOLTAGE,
@@ -93,6 +94,7 @@ CONFIG_SCHEMA = cv.All(
             ),
             cv.Optional(CONF_SAMPLES, default=1): cv.int_range(min=1, max=255),
             cv.Optional(CONF_SAMPLING_MODE, default="avg"): _sampling_mode,
+            cv.Optional(CONF_POWER_SUPPLY): cv.use_id(power_supply.PowerSupply),
         }
     )
     .extend(cv.polling_component_schema("60s")),
@@ -118,6 +120,10 @@ async def to_code(config):
     cg.add(var.set_output_raw(config[CONF_RAW]))
     cg.add(var.set_sample_count(config[CONF_SAMPLES]))
     cg.add(var.set_sampling_mode(config[CONF_SAMPLING_MODE]))
+
+    if (power_supply_id := config.get(CONF_POWER_SUPPLY)) is not None:
+        var_ = await cg.get_variable(power_supply_id)
+        cg.add(var.set_power_supply(var_))
 
     if attenuation := config.get(CONF_ATTENUATION):
         if attenuation == "auto":

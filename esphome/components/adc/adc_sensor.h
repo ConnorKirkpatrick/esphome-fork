@@ -10,6 +10,10 @@
 #include "driver/adc.h"
 #endif  // USE_ESP32
 
+#ifdef USE_POWER_SUPPLY
+#include "esphome/components/power_supply/power_supply.h"
+#endif
+
 namespace esphome {
 namespace adc {
 
@@ -80,11 +84,19 @@ class ADCSensor : public sensor::Sensor, public PollingComponent, public voltage
   void set_is_temperature() { this->is_temperature_ = true; }
 #endif  // USE_RP2040
 
+#ifdef USE_POWER_SUPPLY
+  void set_power_supply(power_supply::PowerSupply *power_supply) { this->power_.set_parent(power_supply); }
+#endif  // USING POWER_SUPPLY FOR SENSOR
+
  protected:
   InternalGPIOPin *pin_;
   bool output_raw_{false};
   uint8_t sample_count_{1};
   SamplingMode sampling_mode_{SamplingMode::AVG};
+
+#ifdef USE_POWER_SUPPLY
+  power_supply::PowerSupplyRequester power_;
+#endif
 
 #ifdef USE_RP2040
   bool is_temperature_{false};
